@@ -1,26 +1,26 @@
-library(dplyr)
 library(plyr)
+library(dplyr)
 
 ## INPUT
-# get the path of counts file
+# get the path of counts file and cancerType
 CountsFile=commandArgs(T)
 
 # get cancerType; read normalized counts and PRDM9 bound peaks
 if (strsplit(CountsFile,split='m.')[[1]][2] == "txt") {
-	# for cancer type-specific data
-	cType <- strsplit(strsplit(CountsFile,split='CountMatrices/')[[1]][2],split='_')[[1]][1]
-	# read normalized counts
-	norm_ct <- read.delim(file = CountsFile,sep = "\t",header=TRUE)
-	# read PRDM9 bound peaks
-	PRDM9BoundPeaks_df <- read.delim(file = paste0("/exports/eddie/scratch/s1949868/SelectPRDM9BoundPeaks_23/",cType,"_PRDM9_bound_peaks.bed"),sep = "\t",header = FALSE)
+  # for cancer type-specific data
+  cType <- strsplit(strsplit(CountsFile,split='CountMatrices/')[[1]][2],split='_')[[1]][1]
+  # read normalized counts
+  norm_ct <- read.delim(file = CountsFile,sep = "\t",header=TRUE)
+  # read PRDM9 bound peaks
+  PRDM9BoundPeaks_df <- read.delim(file = paste0("/exports/eddie/scratch/s1949868/SelectPRDM9BoundPeaks_23/",cType,"_PRDM9_bound_peaks.bed"),sep = "\t",header = FALSE)
 } else {
-	# for pan cancer data
-	cType <- "pan"
-	# read normalized counts
-	norm_ct <- readRDS(file = CountsFile)
-	norm_ct <- norm_ct[1,c(-6,-7)]
-	# read PRDM9 bound peaks
-	PRDM9BoundPeaks_df <- read.delim(file = "/exports/eddie/scratch/s1949868/SelectPRDM9BoundPeaks_pan/TCGA-ATAC_PanCancer_PRDM9_bound_peaks.bed",sep = "\t",header = FALSE)
+  # for pan cancer data
+  cType <- "pan"
+  # read normalized counts
+  norm_ct <- readRDS(file = CountsFile)
+  norm_ct <- norm_ct[,c(-6,-7)]
+  # read PRDM9 bound peaks
+  PRDM9BoundPeaks_df <- read.delim(file = "/exports/eddie/scratch/s1949868/SelectPRDM9BoundPeaks_pan/TCGA-ATAC_PanCancer_PRDM9_bound_peaks.bed",sep = "\t",header = FALSE)
 }
 
 # read ID conversion table
@@ -48,7 +48,7 @@ rownames(norm_ct) <- norm_ct$name
 PRDM9BoundPeaks <- as.character(PRDM9BoundPeaks_df$V4)
 
 # select counts within PRDM9 bound peaks
-norm_ct_PRDM9BoundPeaks <- norm_ct[PRDM9BoundPeaks,]
+norm_ct_PRDM9BoundPeaks <- norm_ct[norm_ct$name %in% PRDM9BoundPeaks,]
 # get index of sampleID in norm_ct_PRDM9BoundPeaks
 idx <- match(gsub("_","-",colnames(norm_ct_PRDM9BoundPeaks)[-c(1:5)]),samples.ids$bam_prefix)
 # rename colnames of norm_ct_PRDM9BoundPeaks
@@ -99,7 +99,7 @@ result <- plyr::adply(norm_ct_PRDM9BoundPeaks.merge,.margins = 1,.fun = function
 # use Benjamini & Hochberg (1995) method ("BH" or its alias "fdr") to adjust pvalue
 result$p.adj <- stats::p.adjust(result$raw_p_value,method = "BH")
 rownames(result) <- result$peak
-output <- cbind(norm_ct_PRDM9BoundPeaks[,c(1:3)],result)
+output <- cbind(norm_ct_PRDM9BoundPeaks[,c(1:4)],result[,c(2:4)])
 
 
 
