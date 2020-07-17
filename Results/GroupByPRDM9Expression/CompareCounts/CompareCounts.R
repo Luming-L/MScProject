@@ -2,21 +2,32 @@ library(dplyr)
 library(plyr)
 
 ## INPUT
-# get the path of counts file and cancerType
+# get the path of counts file
 CountsFile=commandArgs(T)
-cType <- strsplit(strsplit(CountsFile,split='CountMatrices/')[[1]][2],split='_')[[1]][1]
+
+# get cancerType; read normalized counts and PRDM9 bound peaks
+if (strsplit(CountsFile,split='m.')[[1]][2] == "txt") {
+	# for cancer type-specific data
+	cType <- strsplit(strsplit(CountsFile,split='CountMatrices/')[[1]][2],split='_')[[1]][1]
+	# read normalized counts
+	norm_ct <- read.delim(file = CountsFile,sep = "\t",header=TRUE)
+	# read PRDM9 bound peaks
+	PRDM9BoundPeaks_df <- read.delim(file = paste0("/exports/eddie/scratch/s1949868/SelectPRDM9BoundPeaks_23/",cType,"_PRDM9_bound_peaks.bed"),sep = "\t",header = FALSE)
+} else {
+	# for pan cancer data
+	cType <- "pan"
+	# read normalized counts
+	norm_ct <- readRDS(file = CountsFile)
+	norm_ct <- norm_ct[1,c(-6,-7)]
+	# read PRDM9 bound peaks
+	PRDM9BoundPeaks_df <- read.delim(file = "/exports/eddie/scratch/s1949868/SelectPRDM9BoundPeaks_pan/TCGA-ATAC_PanCancer_PRDM9_bound_peaks.bed",sep = "\t",header = FALSE)
+}
 
 # read ID conversion table
 samples.ids <- read.delim(file = "/exports/eddie/scratch/s1949868/TCGA_identifier_mapping",sep = "\t",header=TRUE)
 
 # read PRDM9 expression
 PRDM9 <- read.delim("/exports/eddie/scratch/s1949868/geneExpression/PRDM9Expression.txt", sep = "\t")
-
-# read normalized counts
-norm_ct <- read.delim(file = CountsFile,sep = "\t",header=TRUE)
-
-# read PRDM9 bound peaks
-PRDM9BoundPeaks_df <- read.delim(file = paste0("/exports/eddie/scratch/s1949868/SelectPRDM9BoundPeaks_23/",cType,"_PRDM9_bound_peaks.bed"),sep = "\t",header = FALSE)
 
 
 
@@ -37,7 +48,7 @@ rownames(norm_ct) <- norm_ct$name
 PRDM9BoundPeaks <- as.character(PRDM9BoundPeaks_df$V4)
 
 # select counts within PRDM9 bound peaks
-norm_ct_PRDM9BoundPeaks <- norm_ct[norm_ct$name %in% PRDM9BoundPeaks,]
+norm_ct_PRDM9BoundPeaks <- norm_ct[PRDM9BoundPeaks,]
 # get index of sampleID in norm_ct_PRDM9BoundPeaks
 idx <- match(gsub("_","-",colnames(norm_ct_PRDM9BoundPeaks)[-c(1:5)]),samples.ids$bam_prefix)
 # rename colnames of norm_ct_PRDM9BoundPeaks
