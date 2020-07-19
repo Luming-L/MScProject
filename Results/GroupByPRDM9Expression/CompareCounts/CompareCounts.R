@@ -2,12 +2,15 @@ library(plyr)
 library(dplyr)
 
 ## INPUT
-# get the path of counts file and cancerType
-CountsFile=commandArgs(T)
+# get the path of counts file and threshold to group by PRDM9 expression
+args=commandArgs(T)
+CountsFile=args[1]
+PRDM9_threshold=as.integer(args[2])
 
 # get cancerType; read normalized counts and PRDM9 bound peaks
 if (strsplit(CountsFile,split='m.')[[1]][2] == "txt") {
   # for cancer type-specific data
+  # get cancerType
   cType <- strsplit(strsplit(CountsFile,split='CountMatrices/')[[1]][2],split='_')[[1]][1]
   # read normalized counts
   norm_ct <- read.delim(file = CountsFile,sep = "\t",header=TRUE)
@@ -81,9 +84,9 @@ norm_ct_PRDM9BoundPeaks.merge <- matMerged
 
 # Group
 # group by PRDM9 expression
-withExpression.idx <- intersect(x = rownames(PRDM9[PRDM9$PRDM9Expression!=0,,drop = FALSE]), 
+withExpression.idx <- intersect(x = rownames(PRDM9[PRDM9$PRDM9Expression>PRDM9_threshold,,drop = FALSE]), 
                                 y = colnames(norm_ct_PRDM9BoundPeaks.merge))
-withoutExpression.idx <- intersect(x = rownames(PRDM9[PRDM9$PRDM9Expression==0,,drop = FALSE]), 
+withoutExpression.idx <- intersect(x = rownames(PRDM9[!PRDM9$PRDM9Expression>PRDM9_threshold,,drop = FALSE]), 
                                 y = colnames(norm_ct_PRDM9BoundPeaks.merge))
 
 # t-test
