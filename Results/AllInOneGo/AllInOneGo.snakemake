@@ -1,0 +1,4 @@
+rule bwTobg:
+    output: "{dataset}.bg"
+    input:  "/exports/eddie/scratch/s1949868/BigWig/{dataset}.bw"
+    shell:  "/home/s1949868/Tools/bigWigToBedGraph {input} {output}"
