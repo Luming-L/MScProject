@@ -9,6 +9,8 @@
 
 # Configure modules
 . /etc/profile.d/modules.sh
+module load python/3.4.3
+module load igmm/apps/MACS2/2.1.1
 
 for file in $(ls /exports/eddie/scratch/s1949868/BigWig/* | head -n $SGE_TASK_ID | tail -n1); do
 	echo $file
@@ -20,6 +22,6 @@ for file in $(ls /exports/eddie/scratch/s1949868/BigWig/* | head -n $SGE_TASK_ID
 	cd ./$fileName
 
 	# run snakemake workflow
-	snakemake -s /exports/eddie/scratch/s1949868/AllInOneGo/AllInOneGo.snakemake ${fileName}.bg -j1 -p
+	snakemake -s /home/s1949868/Results/AllInOneGo/AllInOneGo.snakemake ${fileName}.bdgpeakcalls.bed -j1 -p
 
 done

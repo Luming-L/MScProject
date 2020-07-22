@@ -48,6 +48,6 @@ df2.to_csv(fileName+".lambda.bg",sep="\t",header=False,index=False)
 # Compare ATAC-seq signal and local lambda to get the scores in pvalue
 os.system("macs2 bdgcmp -t "+file_path+" -c " +fileName+".lambda.bg"+" -m ppois -o "+fileName+".pvalue.bg")
 print("macs2 bdgcmp -t "+file_path+" -c " +fileName+".lambda.bg"+" -m ppois -o "+fileName+".pvalue.bg")
-# Call peaks on score track using a cutoff p-value=0.001
-os.system("macs2 bdgpeakcall -i "+fileName+".pvalue.bg"+" -c 2 -l 150 -g 75 -o "+fileName+".peaks.bed")
-print("macs2 bdgpeakcall -i "+fileName+".pvalue.bg"+" -c 2 -l 150 -g 75 -o "+fileName+".peaks.bed")
+# Call peaks on score track using a cutoff p-value=0.01
+os.system("macs2 bdgpeakcall -i "+fileName+".pvalue.bg"+" -c 2 -l 150 -g 75 -o "+fileName+".bdgpeakcalls.bed")
+print("macs2 bdgpeakcall -i "+fileName+".pvalue.bg"+" -c 2 -l 150 -g 75 -o "+fileName+".bdgpeakcalls.bed")

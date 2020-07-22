@@ -1,3 +1,8 @@
+rule recallPeaks:
+    output: "{dataset}.bdgpeakcalls.bed"
+    input:  "{dataset}.bg"
+    shell:  "python3 /exports/eddie/scratch/s1949868/AllInOneGo/peakRecall.py {input}"
+
 rule bwTobg:
     output: "{dataset}.bg"
     input:  "/exports/eddie/scratch/s1949868/BigWig/{dataset}.bw"
