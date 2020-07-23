@@ -1,7 +1,14 @@
+rule selectPRDM9BoundPeaks:
+    output: "{dataset}.PRDM9_bound_peaks.bed"
+    input:  "{dataset}.fimo.out"
+    shell:  "bedtools intersect -a {wildcards.dataset}.peakCalls.bed -b {input} -F 1.0 -u > {output}"
+
 rule findMotif:
-    output: "{dataset}.fimo_out"
+    output: "{dataset}.fimo.out"
     input:  "{dataset}.peakCalls.fasta"
-    shell:  "fimo  --verbosity 4 --parse-genomic-coord --max-stored-scores 10000000 --oc {output} /home/s1949868/PRDM9.pwm.meme {input}"
+    shell:  r"""fimo --verbosity 4 --parse-genomic-coord --max-stored-scores 10000000 /home/s1949868/PRDM9.pwm.meme {input}
+    mv fimo_out/fimo.gff {output}
+    """
 
 rule getPeaksFasta:
     output: "{dataset}.peakCalls.fasta"
@@ -31,4 +38,3 @@ rule bwTobg:
     output: "{dataset}.bg"
     input:  "/exports/eddie/scratch/s1949868/BigWig/{dataset}.bw"
     shell:  "/home/s1949868/Tools/bigWigToBedGraph {input} {output}"
-
