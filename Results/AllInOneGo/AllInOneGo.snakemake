@@ -1,9 +1,34 @@
+rule findMotif:
+    output: "{dataset}.fimo_out"
+    input:  "{dataset}.peakCalls.fasta"
+    shell:  "fimo  --verbosity 4 --parse-genomic-coord --max-stored-scores 10000000 --oc {output} /home/s1949868/PRDM9.pwm.meme {input}"
+
+rule getPeaksFasta:
+    output: "{dataset}.peakCalls.fasta"
+    input:  "{dataset}.peakCalls.bed"
+    shell:  "bedtools getfasta -fi /home/s1949868/Tools/hg38.fa -bed {input} -fo {output}"
+
+rule refinePeaks:
+    output: "{dataset}.peakCalls.bed"
+    input:  "{dataset}.bdgpeakcalls.bed.sorted"
+    shell:  """for file in {input} ; do \
+     cancerType=${{file:0:4}}; \
+     cancerType=${{cancerType%x*}}; \
+     bedtools intersect -a /exports/eddie/scratch/s1949868/TCGA-ATAC_Cancer_Type-specific_PeakCalls/sorted/${{cancerType}}_peakCalls.txt.sorted -b {input} -f 0.5 -u > {output}; \
+     done"""
+
+rule sortBdgpeakcalls:
+    output: "{dataset}.bdgpeakcalls.bed.sorted"
+    input:  "{dataset}.bdgpeakcalls.bed"
+    shell:  """sort -k1,1 -k2,2n {input} | awk '{{FS=OFS="\t"; if($1~/^chr/){{print $1,$2,$3}}}}' > {output}"""
+
 rule recallPeaks:
     output: "{dataset}.bdgpeakcalls.bed"
     input:  "{dataset}.bg"
-    shell:  "python3 /exports/eddie/scratch/s1949868/AllInOneGo/peakRecall.py {input}"
+    shell:  "python3 /home/s1949868/Results/PeakRecall/peakRecall.py {input}"
 
 rule bwTobg:
     output: "{dataset}.bg"
     input:  "/exports/eddie/scratch/s1949868/BigWig/{dataset}.bw"
     shell:  "/home/s1949868/Tools/bigWigToBedGraph {input} {output}"
+

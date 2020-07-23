@@ -2,7 +2,7 @@
 # Grid Engine options (lines prefixed with #$)
 #$ -cwd -V                  
 #$ -l h_rt=00:30:00
-#$ -pe sharedmem 4
+#$ -pe sharedmem 8
 #$ -l h_vmem=4G
 
 #$ -t 1-1
@@ -11,6 +11,8 @@
 . /etc/profile.d/modules.sh
 module load python/3.4.3
 module load igmm/apps/MACS2/2.1.1
+module load igmm/apps/BEDTools/2.27.1
+module load igmm/apps/meme/4.11.1
 
 for file in $(ls /exports/eddie/scratch/s1949868/BigWig/* | head -n $SGE_TASK_ID | tail -n1); do
 	echo $file
