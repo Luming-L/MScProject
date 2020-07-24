@@ -1,14 +1,6 @@
 library(regioneR,lib.loc="/exports/eddie/scratch/s1949868/R/library")
 library(BSgenome.Hsapiens.UCSC.hg38,lib.loc="/exports/eddie/scratch/s1949868/R/library")
 
-# get ID from arg
-ID=commandArgs(T)
-# get cancerType,numMut,numOverlap belonging to this ID
-info=read.delim("/exports/eddie/scratch/s1949868/SNPsAndSmallINDELs/MutNumber.noZero.sorted.txt",header = FALSE)
-cancerType=as.character(info[info$V1==ID,2])
-numMut=as.character(info[info$V1==ID,3])
-numOverlap=as.character(info[info$V1==ID,4])
-
 # set B
 mutect2_snv <- readRDS(file = "/exports/eddie/scratch/s1949868/SNPsAndSmallINDELs/mutect2_snv.rds")
 mutations <- toGRanges(mutect2_snv[mutect2_snv$Sample_ID==ID,c(3,4,5)])
