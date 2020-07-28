@@ -23,7 +23,7 @@ if (strsplit(CountsFile,split='m.')[[1]][2] == "txt") {
   norm_ct <- readRDS(file = CountsFile)
   norm_ct <- norm_ct[,c(-6,-7)]
   # read PRDM9 bound peaks
-  PRDM9BoundPeaks_df <- read.delim(file = "/exports/eddie/scratch/s1949868/SelectPRDM9BoundPeaks_pan/TCGA-ATAC_PanCancer_PRDM9_bound_peaks.bed",sep = "\t",header = FALSE)
+  PRDM9BoundPeaks_df <- read.delim(file = "/exports/eddie/scratch/s1949868/SelectPRDM9BoundPeaks_pan/TCGA-ATAC_PanCancer_PRDM9_bound_peaks.p1e-6.bed",sep = "\t",header = FALSE)
 }
 
 # read ID conversion table
