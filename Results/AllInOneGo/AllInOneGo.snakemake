@@ -1,13 +1,28 @@
 rule selectPRDM9BoundPeaks:
     output: "{dataset}.PRDM9_bound_peaks.bed"
     input:  "{dataset}.fimo.out"
-    shell:  "bedtools intersect -a {wildcards.dataset}.peakCalls.bed -b {input} -F 1.0 -u > {output}"
+    shell:  r"""
+    bedtools intersect -a {wildcards.dataset}.peakCalls.bed -b {wildcards.dataset}.3.fimo.out -F 1.0 -u > {wildcards.dataset}.f3.PRDM9_bound_peaks.bed
+    bedtools intersect -a {wildcards.dataset}.peakCalls.bed -b {wildcards.dataset}.4.fimo.out -F 1.0 -u > {wildcards.dataset}.f4.PRDM9_bound_peaks.bed
+    bedtools intersect -a {wildcards.dataset}.peakCalls.bed -b {wildcards.dataset}.5.fimo.out -F 1.0 -u > {wildcards.dataset}.f5.PRDM9_bound_peaks.bed
+    bedtools intersect -a {wildcards.dataset}.peakCalls.bed -b {wildcards.dataset}.6.fimo.out -F 1.0 -u > {wildcards.dataset}.f6.PRDM9_bound_peaks.bed
+    """
 
 rule findMotif:
     output: "{dataset}.fimo.out"
     input:  "{dataset}.peakCalls.fasta"
-    shell:  r"""fimo --verbosity 4 --parse-genomic-coord --max-stored-scores 10000000 /home/s1949868/PRDM9.pwm.meme {input}
-    mv fimo_out/fimo.gff {output}
+    shell:  r"""
+    fimo --verbosity 4 --parse-genomic-coord --max-stored-scores 10000000 --oc fimo_out /home/s1949868/PRDM9.pwm.meme {input}
+    fimo --verbosity 4 --parse-genomic-coord --max-stored-scores 10000000 --oc fimo_out3 --thresh 1e-3 /home/s1949868/PRDM9.pwm.meme {input}
+    fimo --verbosity 4 --parse-genomic-coord --max-stored-scores 10000000 --oc fimo_out4 --thresh 1e-4 /home/s1949868/PRDM9.pwm.meme {input}
+    fimo --verbosity 4 --parse-genomic-coord --max-stored-scores 10000000 --oc fimo_out5 --thresh 1e-5 /home/s1949868/PRDM9.pwm.meme {input}
+    fimo --verbosity 4 --parse-genomic-coord --max-stored-scores 10000000 --oc fimo_out6 --thresh 1e-6 /home/s1949868/PRDM9.pwm.meme {input}
+    
+    mv fimo_out/fimo.gff {wildcards.dataset}.fimo.out
+    mv fimo_out3/fimo.gff {wildcards.dataset}.3.fimo.out
+    mv fimo_out4/fimo.gff {wildcards.dataset}.4.fimo.out
+    mv fimo_out5/fimo.gff {wildcards.dataset}.5.fimo.out
+    mv fimo_out6/fimo.gff {wildcards.dataset}.6.fimo.out
     """
 
 rule getPeaksFasta:
@@ -31,8 +46,24 @@ rule sortBdgpeakcalls:
 
 rule recallPeaks:
     output: "{dataset}.bdgpeakcalls.bed"
+    input:  "{dataset}.pvalue.bg"
+    # Call peaks on score track using a cutoff p-value=0.01
+    shell:  r"""
+    macs2 bdgpeakcall -i {input} -c 2 -l 150 -g 75 -o /exports/eddie/scratch/s1949868/AllInOneGo/bdgpeakcall2/{wildcards.dataset}/{output}
+    macs2 bdgpeakcall -i {input} -c 3 -l 150 -g 75 -o /exports/eddie/scratch/s1949868/AllInOneGo/bdgpeakcall3/{wildcards.dataset}/{output}
+    macs2 bdgpeakcall -i {input} -c 4 -l 150 -g 75 -o /exports/eddie/scratch/s1949868/AllInOneGo/bdgpeakcall4/{wildcards.dataset}/{output}
+    macs2 bdgpeakcall -i {input} -c 5 -l 150 -g 75 -o /exports/eddie/scratch/s1949868/AllInOneGo/bdgpeakcall5/{wildcards.dataset}/{output}
+    macs2 bdgpeakcall -i {input} -c 6 -l 150 -g 75 -o /exports/eddie/scratch/s1949868/AllInOneGo/bdgpeakcall6/{wildcards.dataset}/{output}
+    """
+
+rule calculatePoisLambdaAndPvalue:
+    output: "{dataset}.pvalue.bg"
     input:  "{dataset}.bg"
-    shell:  "python3 /home/s1949868/Results/PeakRecall/peakRecall.py {input}"
+    shell:  r"""
+    python3 /home/s1949868/MScProject/Results/AllInOneGo/PeakRecall/calculatePoisLambda.py {input}
+    # Compare ATAC-seq signal and local lambda to get the scores in pvalue
+    macs2 bdgcmp -t {input} -c {wildcards.dataset}.lambda.bg -m ppois -o {output}
+    """
 
 rule bwTobg:
     output: "{dataset}.bg"

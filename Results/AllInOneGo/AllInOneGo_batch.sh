@@ -4,7 +4,7 @@
 #$ -l h_rt=00:10:00
 #$ -l h_vmem=8G
 
-#$ -t 1-796
+#$ -t 697-697
 
 # Configure modules
 . /etc/profile.d/modules.sh
@@ -19,10 +19,10 @@ for file in $(ls /exports/eddie/scratch/s1949868/BigWig/* | head -n $SGE_TASK_ID
 	echo $fileName
 
 	# make a directory for a sample and enter it
-	mkdir ./$fileName
+	# mkdir ./$fileName
 	cd ./$fileName
 
 	# run snakemake workflow
-	snakemake -s /home/s1949868/Results/AllInOneGo/AllInOneGo.snakemake ${fileName}.PRDM9_bound_peaks.bed -j1 -p
+	snakemake -s /home/s1949868/MScProject/Results/AllInOneGo/AllInOneGo.snakemake ${fileName}.PRDM9_bound_peaks.bed -j1 -p
 
 done
